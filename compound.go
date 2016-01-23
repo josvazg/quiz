@@ -31,28 +31,34 @@ func ToWords(r io.Reader) ([]string, error) {
 // 2) Loop through all words decomposing them
 // 3) Record and return the longest compound found amongst all decompositions
 func LongestCompoundWord(words []string) (string, []string, error) {
-	longestCompound := ""
-	var longestSubwords []string = nil
+	match := ""
+	longest := 0
 	skipped := 0
 	trie, err := toTrie(words)
 	if err != nil {
 		return "", nil, err
 	}
 	for _, word := range words {
-		if len(word) >= len(longestSubwords) {
-			subwords, err := decompose(word, trie)
+		if len(word) >= longest {
+			length, err := countSubwords(word, trie)
 			if err != nil {
 				return "", nil, err
 			}
-			if len(subwords) > 1 && len(subwords) > len(longestSubwords) {
-				longestCompound = word
-				longestSubwords = subwords
+			if length > 1 && length > longest {
+				match = word
+				longest = length
 			}
 		} else {
 			skipped++
 		}
 	}
-	return longestCompound, longestSubwords, nil
+	var subwords []string
+	if longest > 1 {
+		if subwords, err = decompose(match, trie); err != nil {
+			return "", nil, err
+		}
+	}
+	return match, subwords, nil
 }
 
 // Decompose returns the longest possible decomposition of word into subwords found in words,
@@ -80,6 +86,45 @@ func toTrie(words []string) (*Trie, error) {
 		}
 	}
 	return trie, nil
+}
+
+// coundSubwords tries to count the length of the max sequence of subwords in the trie a word can be decomposed in
+//
+// Steps:
+// FOR each prefix of word in found in trie...
+//   IF prefix is word AND we have 0 subwords recorded, record 1
+//   Compute remainder suffix
+//   count suffix subwords
+//   IF count returned >0 AND count is more or equal the recorded subwords length so far...
+//     record count + 1
+// return count
+//
+// Invariants and validations:
+// 1) Empty word returns 0
+// 2) Words with no prefixes ARE not present in the trie AND also return 0
+// 3) If the only prefix of word in the trie happens to be word, 1 is returned
+// 4) count is the longest decomposition found so far
+func countSubwords(word string, trie *Trie) (int, error) {
+	count := 0
+	prefixes, err := trie.Prefixes(word)
+	if err != nil {
+		return 0, err
+	}
+	for _, prefix := range prefixes {
+		if prefix == word && count == 0 {
+			count = 1
+			continue
+		}
+		suffix := word[len(prefix):]
+		suffixes, err := countSubwords(suffix, trie)
+		if err != nil {
+			return 0, err
+		}
+		if suffixes > 0 && suffixes >= count {
+			count = suffixes + 1
+		}
+	}
+	return count, nil
 }
 
 // decompose tries to decompose word into the longest sequence of words found in the given trie
