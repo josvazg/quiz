@@ -11,13 +11,19 @@ Obviously, we are looking for a fresh solution, not based on others' code.
 ---
 
 ## Test with:
-  go test
+```bash
+go test
+```
 
 ## Run with:
-  cd cmd
-  go build longestCompound.go
-  cat ../words.list | ./longestCompound --stdin
+```bash
+cd cmd
+go build longestCompound.go
+cat ../words.list | ./longestCompound --stdin
+```
 
 ## Cmd line help:
-  cd cmd
-  longestCompound -h
+```bash
+cd cmd
+longestCompound -h
+```
