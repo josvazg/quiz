@@ -8,4 +8,16 @@ Fork this repo, add your solution and documentation on how to compile and run yo
 
 Obviously, we are looking for a fresh solution, not based on others' code.
 
+---
 
+## Test with:
+  go test
+
+## Run with:
+  cd cmd
+  go build longestCompound.go
+  cat ../words.list | ./longestCompound --stdin
+
+## Cmd line help:
+  cd cmd
+  longestCompound -h
